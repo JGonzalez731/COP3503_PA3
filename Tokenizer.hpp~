@@ -6,10 +6,9 @@
 class Tokenizer{
 	public:
 		Tokenizer(Stack stack): stack(stack);
-		void parse(string fileName);
+		parse(string fileName);
 	private:
 		Stack stack;
-		void findKeywords(string str);
 }
 
 #endif

@@ -1,4 +1,6 @@
 #include <fstream>
+#include "TOKEN_CONSTANTS.hpp"
+#include <ctype.h>
 
 void Tokenizer::parse(string fileName){
 
@@ -7,7 +9,8 @@ void Tokenizer::parse(string fileName){
 	
 	//Check if file opened successfully
 	if(!fileStream.is_open()){
-		//TODO send a msg to ouput or throw or use boolean
+		//TODO throw an error
+		
 		return;
 	}
 	
@@ -15,6 +18,41 @@ void Tokenizer::parse(string fileName){
 	string line;
 	
 	while(getline(fileStream, line)){
-		//TODO MAGIC
+		//Look for possible keywords
+		findKeywords(line);
+		
+		//TODO look for more things!
 	}
+}
+
+void Tokenizer::findKeywords(string str){
+	string keyword; //Stores found keywords
+
+	//Look for capitalised letters
+	for(int i = 0; i < str.length(); ++i){
+		//Character is part of a keyword
+		if(isupper(str[i])){
+			keyword.push_back(str[i];
+		}
+		//Char is not part of a keyword
+		else{
+			//Keyword found, add to stack
+			if(isKeyword(keyword)){
+				stack.add(keyword);
+			}
+			
+			//Empty string
+			keyword.clear();
+		}
+	}
+}
+
+bool Tokenizer::isKeyword(string word){
+	for(int i = 0; i < KEYWORDS.length; ++i){
+		if(KEYWORDS[i].compare(word) == 0){
+			return true;
+		}
+	}
+	
+	return false;
 }

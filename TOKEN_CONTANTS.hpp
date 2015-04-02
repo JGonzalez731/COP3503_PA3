@@ -18,6 +18,7 @@ const string WHILE = "WHILE";
 const string IF = "IF";
 const string ELSE = "ELSE";
 const string ESLEIF = "ELSEIF";
+string KEYWORDS[] = {BEGIN, END, FOR, WHILE, IF, ELSE, ELSEIF};
 
 //Delimiter types
 const char OPEN_PAR = '(';
