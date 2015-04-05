@@ -1,0 +1,2 @@
+PA3: pa3.cpp Tokenizer.hpp Stack.hpp Token.hpp TOKEN_CONSTANTS.hpp
+	g++ -Wall -o pa3.out pa3.cpp Tokenizer.hpp Stack.hpp Token.hpp TOKEN_CONSTANTS.hpp

@@ -1,0 +1,12 @@
+FOR (i, 10, ++)
+BEGIN
+FOR (j, 10, ++)
+BEGAN
+sum=sum + i + j;
+END
+END
+
+i=3;
+WHILE(i<100)
+BEGIN
+i=i*(i-1));

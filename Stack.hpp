@@ -2,20 +2,22 @@
 #define STACK_H
 
 #include "Token.hpp"
+#include <vector>
+#include <iostream>
 
 class Stack{
 	public:
 		void add(Token token){ tokenStack.push_back(token); }
 		void remove(){ tokenStack.pop_back(); }
 		void print(){
-			it = vector<Token>::iterator;
+			std::vector<Token>::iterator it;
 			for(it = tokenStack.begin(); it != tokenStack.end(); ++it){
-				cout << it->getType(); << endl;
+				std::cout << it->getType() << std::endl;
 			}
 		}
 		
 	private:
-		vector<Token> tokenStack;
-}
+		std::vector<Token> tokenStack;
+};
 
 #endif

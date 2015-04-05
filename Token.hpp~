@@ -8,8 +8,8 @@ class Token{
 		std::string getType(){ return type; }
 	
 	private:
-		int category;
-		std::string type;
+		const int category;
+		const std::string type;
 };
 
 #endif

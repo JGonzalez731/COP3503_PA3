@@ -1,22 +1,24 @@
 #include <iostream>
 #include <string>
-#include "TOKEN_CONSTANTS.hpp"
 #include "Tokenizer.hpp"
 
 using namespace std;
 
 int main(){
-	//Create stack object
-	Stack stack;
-	
-	//Bind stack object to tokenizer
-	Tokenizer tokenizer(stack);
+	//Initialize a tokenizer to parse the file
+	Tokenizer tokenizer;
 	
 	//Parse the received file
-	tokenizer.parse(/* fileName */);
+	tokenizer.parse("test.txt");
 	
-	//View the tokens added to the stack
-	stack.print();
+	//Display found keywords
+	tokenizer.printKeywords();
+	
+	//Display found constants
+	tokenizer.printConstants();
+	
+	//Display errors
+	tokenizer.printErrors();
 	
 	return 0;
 }
