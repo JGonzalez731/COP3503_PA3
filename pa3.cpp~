@@ -17,6 +17,7 @@ int main(){
 	tokenizer.parse(filePath);
 	
 	//Display the loop depth
+	cout << "OUTPUT> ";
 	tokenizer.printLoopDepth();
 	cout << endl;
 	
