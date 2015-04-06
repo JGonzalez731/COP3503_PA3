@@ -17,7 +17,7 @@ const std::string IF = "IF";
 const std::string ELSE = "ELSE";
 const std::string ELSEIF = "ELSEIF";
 std::string KEYWORDS[] = {BEGIN, END, FOR, WHILE, IF, ELSE, ELSEIF};
-int KEYWORDR [] = {0,0,0,0,0,0,0}; //Bit register to keep track of which keywords have been used
+int KEYWORDR [] = {0,0,0,0,0,0,0}; //Bit register to keep track of which keywords have been found
 
 //Delimiter types
 const char OPEN_PAR = '(';

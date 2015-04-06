@@ -19,14 +19,14 @@ void Tokenizer::parse(string fileName){
 		return;
 	}
 	
-	/* Turn file into string */
+	//Turn file into string
 	string file;
 	string line;
 	
 	while(getline(fileStream, line)){
 		file.append(line + '\n');
 	}
-	file.pop_back();
+	file.erase(file.begin() + (file.length()-1));
 	
 	//Look for possible keywords
 	findKeywords(file);
@@ -34,7 +34,34 @@ void Tokenizer::parse(string fileName){
 	//Look for possible constants
 	findConstants(file);
 	
+	//Look for delimiters
+	findDelimiters(file);
+	
+	//Look for identifiers
+	findIdentifiers(file);
+	
 	//TODO look for more things!
+	
+	/* Final error checking */
+	
+	//Check for extra begin statements
+	if(beginStack.length() > 0){
+		for(int i = 0; i < beginStack.length(); ++i){
+			errors.push_back("Missing END keyword");
+		}
+	}
+	
+	//Check for extra open parentheses
+	if(parStack.length() > 0){
+		for(int i = 0; i < parStack.length(); ++i){
+			errors.push_back("Missing closing parentheses");
+		}
+	}
+}
+
+//Prints the depth of the nested loops
+void Tokenizer::printLoopDepth(){
+	cout << "The depth of the nested loop(s) is " << loopStack.maxLength() << endl;
 }
 
 //Prints a list of used keywords, in the order that they first appeared
@@ -54,6 +81,17 @@ void Tokenizer::printConstants(){
 	
 	cout << "Constants:";
 	for(it = constants.begin(); it != constants.end(); ++it){
+		cout << " " << (*it);
+	}
+	cout << endl;
+}
+
+//Prints a list of found delimiters, in the order that they appeared
+void Tokenizer::printDelimiters(){
+	vector<char>::iterator it;
+	
+	cout << "Delimiters:";
+	for(it = delimiters.begin(); it != delimiters.end(); ++it){
 		cout << " " << (*it);
 	}
 	cout << endl;
@@ -103,7 +141,7 @@ void Tokenizer::findKeywords(string str){
 					}
 					//There are more ends than begins
 					else{
-						errors.push_back("Missing keyword BEGIN");
+						errors.push_back("Extra keyword END");
 					}
 				}
 			}
@@ -124,17 +162,60 @@ void Tokenizer::findKeywords(string str){
 				if(keyword.compare("FOR") == 0){
 					//Add to loop stack
 					loopStack.add(keyword);
-					//TODO check for delimiters
-					//TODO check for begin on next line
+					//Check for delimiters
+					int commasFound = 0;
+					unsigned int j = i;
+					char c = str[i];
+					
+					while(c != '\n' && j <= str.length()){
+						if(c == COMMA) ++commasFound;
+						
+						++j;
+						c = str[j];
+					}
+					
+					if(commasFound != 2) errors.push_back("Invalid arguments for FOR loop");
+					
+					/* Check for begin on next line */
+					unsigned int k = i;
+					
+					//Move to next line
+					while(k <= str.length()){
+						//Check if newline character was found
+						if(str[k] == '\n') break;
+						
+						++k;
+					}
+					//Begin keyword not found
+					unsigned int pos = str.find(BEGIN, k);
+					if(pos == string::npos || pos > (k+1)){
+						errors.push_back("Missing BEGIN keyword after FOR");
+					}
 				}
 				else if(keyword.compare("WHILE") == 0){
 					//Add to loop stack
 					loopStack.add(keyword);
+					
 					//Check for logical expression
 					if(str[i] != OPEN_PAR){
 						errors.push_back("Missing logical expression for WHILE loop");
 					}
-					//TODO check for begin on next line
+					
+					/* Check for begin on next line */
+					unsigned int k = i;
+					
+					//Move to next line
+					while(k <= str.length()){
+						//Check if newline character was found
+						if(str[k] == '\n') break;
+						
+						++k;
+					}
+					//Begin keyword not found
+					unsigned int pos = str.find(BEGIN, k);
+					if(pos == string::npos || pos > (k+1)){
+						errors.push_back("Missing BEGIN keyword after WHILE");
+					}
 				}
 				else if(keyword.compare("IF") == 0){
 					//Add to branch list
@@ -181,7 +262,7 @@ void Tokenizer::findKeywords(string str){
 					}
 					//There are more ends than begins
 					else{
-						errors.push_back("Missing keyword BEGIN");
+						errors.push_back("Extra keyword END");
 					}
 				}
 			}
@@ -214,6 +295,7 @@ bool Tokenizer::isKeyword(string word){
 		}
 	}
 	
+	//Word is not a keyword
 	return false;
 }
 
@@ -258,6 +340,86 @@ bool Tokenizer::isConstFound(string constant){
 		if(it->compare(constant) == 0){
 			return true;
 		}
+	}
+	
+	return false;
+}
+
+void Tokenizer::findDelimiters(string str){
+	for(unsigned int i = 0; i < str.length(); ++i){
+		//Delimiter found
+		if(isDelimiter(str[i])){
+			if(str[i] == OPEN_PAR){
+				//Add to par stack
+				string openPar(str[i], 1);
+				parStack.add(openPar);
+			}
+			else if(str[i] == CLOSE_PAR){
+				if(parStack.length() > 0){
+					//Remove 1 from par stack
+					parStack.remove();
+				}
+				//Extra closing parentheses
+				else{
+					errors.push_back("Extra closing parentheses");
+				}
+			}
+		}
+	}
+}
+
+//Checks if c is a delimiter
+bool Tokenizer::isDelimiter(char c){
+	int length = sizeof(DELIMITERS)/sizeof(DELIMITERS[0]);
+	
+	for(int i = 0; i < length; ++i){
+		//c is a delimiter
+		if(c == DELIMITERS[i]){
+			//Add delimiter to delimiter vector
+			if(!DELIMITERR[i]){
+				//Add to delimiter vector
+				delimiters.push_back(c);
+				//Change register
+				DELIMITERR[i] = 1;
+			}
+			return true;
+		}
+	}
+	
+	//c is not a delimiter
+	return false;
+}
+
+void Tokenizer::findIdentifiers(string str){
+	string id;
+	
+	for(unsigned int i = 0; i < str.length(); ++i){
+		//Char is part of an identifier
+		if(islower(str[i])){
+			id.push_back(str[i]);
+		}
+		//Char is not part of an identifier
+		else{
+			if(!id.empty()){
+				if(!isIdentifierFound(id)){
+					//Add identifier to vector
+					identifiers.push_back(id);
+				}
+				
+				//Clear string
+				id.clear();
+			}
+		}
+	}
+}
+
+//Checks if an identifier has already been found
+bool Tokenizer::isIdentifierFound(string id){
+	vector<string>::iterator it;
+	
+	for(it = identifiers.begin(); it != identifiers.end(); ++it){
+		//Identifier matched
+		if(it->compare(id) == 0) return true;
 	}
 	
 	return false;

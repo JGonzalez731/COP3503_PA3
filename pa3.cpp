@@ -11,19 +11,23 @@ int main(){
 	//Parse the received file
 	tokenizer.parse("test.txt");
 	
+	//Display the loop depth
+	tokenizer.printLoopDepth();
+	
 	//Display found keywords
 	tokenizer.printKeywords();
 	
+	//Display found identifiers
+	tokenizer.printIdentifiers();
+	
 	//Display found constants
 	tokenizer.printConstants();
+	
+	//Display found delimiters
+	tokenizer.printDelimiters();
 	
 	//Display errors
 	tokenizer.printErrors();
 	
 	return 0;
 }
-
-
-//Have multiple stacks
-//push back for BEGIN, pop back the BEGIN when you find an END
-//Do something similiar for parentheses and maybe statements
