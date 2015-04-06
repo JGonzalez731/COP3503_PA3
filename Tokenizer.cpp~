@@ -40,7 +40,8 @@ void Tokenizer::parse(string fileName){
 	//Look for identifiers
 	findIdentifiers(file);
 	
-	//TODO look for more things!
+	//Look for operators
+	findOperators(file);
 	
 	/* Final error checking */
 	
@@ -75,12 +76,34 @@ void Tokenizer::printKeywords(){
 	cout << endl;
 }
 
+//Prints a list of the found identifiers, in the order that they first appeared
+void Tokenizer::printIdentifiers(){
+	vector<string>::iterator it;
+	
+	cout << "Identifiers:";
+	for(it = identifiers.begin(); it != identifiers.end(); ++it){
+		cout << " " << (*it);
+	}
+	cout << endl;
+}
+
 //Prints a list of found constants, in the order that they appeared
 void Tokenizer::printConstants(){
 	vector<string>::iterator it;
 	
 	cout << "Constants:";
 	for(it = constants.begin(); it != constants.end(); ++it){
+		cout << " " << (*it);
+	}
+	cout << endl;
+}
+
+//Prints a list of found operators, in the order that they appeared
+void Tokenizer::printOperators(){
+	vector<string>::iterator it;
+	
+	cout << "Operators:";
+	for(it = operators.begin(); it != operators.end(); ++it){
 		cout << " " << (*it);
 	}
 	cout << endl;
@@ -422,5 +445,115 @@ bool Tokenizer::isIdentifierFound(string id){
 		if(it->compare(id) == 0) return true;
 	}
 	
+	return false;
+}
+
+void Tokenizer::findOperators(string str){
+	string op;
+
+	for(unsigned int i = 0; i < str.length(); ++i){
+		switch(str[i]){
+			case '>':
+			case '<':
+			case '/':
+			case '*':
+			case '!':
+				//Simple operator found
+				op.push_back(str[i]);
+				if(!isOperatorFound(op)){
+					//Add to operator vector
+					operators.push_back(op);
+				}
+				
+				break;
+			case '&':
+			case '|':
+				//Compound operator found
+				if(str[i] == str[i+1]){
+					//Store found operator
+					op.push_back(str[i]);
+					op.push_back(str[i+1]);
+					
+					if(!isOperatorFound(op)){
+						//Add to operator vector
+						operators.push_back(op);
+					}
+				}
+				
+				break;
+			case '+':
+			case '-':
+				//Check for a compound operator
+				if(str[i] == str[i+1]){
+					//Store found operator
+					op.push_back(str[i]);
+					op.push_back(str[i+1]);
+					//Avoid double scanning
+					++i;
+				}
+				//Not a compound operator
+				else{
+					op.push_back(str[i]);
+				}
+				
+				if(!isOperatorFound(op)){
+					//Add to operator vector
+					operators.push_back(op);
+				}
+				
+				break;
+			case '=':
+				//Check for compound operator
+				if(str[i] == str[i+1]){
+					//Store found operator
+					op.push_back(str[i]);
+					op.push_back(str[i+1]);
+					//Avoid double scanning
+					++i;
+				}
+				//Not a compound operator
+				else{
+					//Store found operator
+					op.push_back(str[i]);
+					
+					//TODO statement error check
+					unsigned int j = i, k = 1;
+					
+					//Find end of line
+					while(str[j] != '\n' && j <= str.length()){
+						++j;
+						++k;
+					}
+					
+					//Check for semicolon in substr
+					string substr = str.substr(j, k);
+					//No semicolon found
+					if(substr.find(';') == string::npos){
+						errors.push_back("Missing ';' at end of statement");
+					}
+				}
+				
+				if(!isOperatorFound(op)){
+					//Add to operator vector
+					operators.push_back(op);
+				}
+				
+				break;
+		}
+		
+		op.clear();
+	}
+}
+
+//Checks if an operator has been previously found
+bool Tokenizer::isOperatorFound(string op){
+	vector<string>::iterator it;
+	
+	for(it = operators.begin(); it != operators.end(); ++it){
+		//Operator has been previously found
+		if(it->compare(op) == 0) return true;
+	}
+	
+	//Operator has not been previously found
 	return false;
 }

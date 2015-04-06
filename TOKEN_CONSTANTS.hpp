@@ -25,7 +25,7 @@ const char CLOSE_PAR = ')';
 const char SEMI = ';';
 const char COMMA = ',';
 int DELIMITERS[] = {OPEN_PAR, CLOSE_PAR, SEMI, COMMA};
-int DELIMITERR[] = {0, 0, 0, 0};
+int DELIMITERR[] = {0, 0, 0, 0};	//Bit register to keep track of which delimiters have been found
 
 //Operator types
 const std::string PLUS = "+";

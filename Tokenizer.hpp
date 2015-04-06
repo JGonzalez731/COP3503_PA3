@@ -15,6 +15,7 @@ class Tokenizer{
 		void printKeywords();
 		void printIdentifiers();
 		void printConstants();
+		void printOperators();
 		void printDelimiters();
 		void printErrors();
 	private:
@@ -27,6 +28,7 @@ class Tokenizer{
 		std::vector<std::string> constants;		//List of found constants
 		std::vector<char> delimiters;			//List of found delimiters
 		std::vector<std::string> identifiers;	//List of found identifiers
+		std::vector<std::string> operators;		//List of found operators
 		std::vector<std::string> errors;		//List of found errors
 		
 		void findKeywords(std::string str);
@@ -40,6 +42,9 @@ class Tokenizer{
 		
 		void findIdentifiers(std::string str);
 		bool isIdentifierFound(std::string id);
+		
+		void findOperators(std::string str);
+		bool isOperatorFound(std::string op);
 };
 
 #endif
