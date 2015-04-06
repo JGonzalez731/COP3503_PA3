@@ -5,3 +5,9 @@ BEGAN
 sum=sum + i + j;
 END
 END
+
+i=3;
+WHILE(i<100)
+BEGIN
+i=i*(i-1));
+WHIL

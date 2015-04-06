@@ -7,13 +7,18 @@
 
 class Tokenizer{
 	public:
-		Tokenizer(){};
+		Tokenizer(){
+			branches.push_back("beginning");
+		}
 		void parse(std::string fileName);
 		void printKeywords();
 		void printConstants();
 		void printErrors();
 	private:
-		Stack keyStack;
+		Stack beginStack;
+		Stack parStack;
+		Stack loopStack;
+		std::vector<std::string> branches;		//Running list of found branches
 		std::vector<std::string> keywords;		//List of found keywords
 		std::vector<std::string> constants;		//List of found constants
 		std::vector<std::string> errors;		//List of found errors

@@ -19,18 +19,22 @@ void Tokenizer::parse(string fileName){
 		return;
 	}
 	
-	/* Tokenize file line by line */
+	/* Turn file into string */
+	string file;
 	string line;
 	
 	while(getline(fileStream, line)){
-		//Look for possible keywords
-		findKeywords(line);
-		
-		//Look for possible constants
-		findConstants(line);
-		
-		//TODO look for more things!
+		file.append(line + '\n');
 	}
+	file.pop_back();
+	
+	//Look for possible keywords
+	findKeywords(file);
+	
+	//Look for possible constants
+	findConstants(file);
+	
+	//TODO look for more things!
 }
 
 //Prints a list of used keywords, in the order that they first appeared
@@ -39,6 +43,17 @@ void Tokenizer::printKeywords(){
 	
 	cout << "Keywords:";
 	for(it = keywords.begin(); it != keywords.end(); ++it){
+		cout << " " << (*it);
+	}
+	cout << endl;
+}
+
+//Prints a list of found constants, in the order that they appeared
+void Tokenizer::printConstants(){
+	vector<string>::iterator it;
+	
+	cout << "Constants:";
+	for(it = constants.begin(); it != constants.end(); ++it){
 		cout << " " << (*it);
 	}
 	cout << endl;
@@ -65,15 +80,37 @@ void Tokenizer::findKeywords(string str){
 			//Add char to string keyword
 			keyword.push_back(str[i]);
 		
-			//If keyword found add to stack
+			//Keyword found
 			if(isKeyword(keyword)){
-				Token token(KEYWORD, keyword);
-				keyStack.add(token);
+				if(keyword.compare("FOR") == 0 ||
+				   keyword.compare("WHILE") == 0 ||
+				   keyword.compare("IF") == 0 ||
+				   keyword.compare("ELSE") == 0 ||
+				   keyword.compare("ELSEIF") == 0){
+					//Keyword is trailing, add to errors
+					errors.push_back("Trailing keyword " + keyword);
+				}
+				else if(keyword.compare("BEGIN") == 0){
+					//Begin will be missing an end, add to errors
+					errors.push_back("Missing keyword END");
+				}
+				else if(keyword.compare("END") == 0){
+					//Remove 1 loop from stack
+					loopStack.remove();
+					//Remove 1 begin from stack
+					if(beginStack.length() > 0){
+						beginStack.remove();
+					}
+					//There are more ends than begins
+					else{
+						errors.push_back("Missing keyword BEGIN");
+					}
+				}
 			}
 			//Invalid keyword found
 			else if(!keyword.empty()){
 				//Add Invalid keyword to errors
-				errors.push_back("Bad token found: " + keyword);
+				errors.push_back("Invalid keyword " + keyword);
 			}
 		}
 		//Character is part of a keyword
@@ -82,15 +119,76 @@ void Tokenizer::findKeywords(string str){
 		}
 		//Char is not part of a keyword
 		else{
-			//Keyword found, add to stack
+			//Keyword found
 			if(isKeyword(keyword)){
-				Token token(KEYWORD, keyword);
-				keyStack.add(token);
+				if(keyword.compare("FOR") == 0){
+					//Add to loop stack
+					loopStack.add(keyword);
+					//TODO check for delimiters
+					//TODO check for begin on next line
+				}
+				else if(keyword.compare("WHILE") == 0){
+					//Add to loop stack
+					loopStack.add(keyword);
+					//Check for logical expression
+					if(str[i] != OPEN_PAR){
+						errors.push_back("Missing logical expression for WHILE loop");
+					}
+					//TODO check for begin on next line
+				}
+				else if(keyword.compare("IF") == 0){
+					//Add to branch list
+					branches.push_back(keyword);
+					
+					//Check for logical expression
+					if(str[i] != OPEN_PAR){
+						errors.push_back("Missing logical expression for IF statement");
+					}
+				}
+				else if(keyword.compare("ELSEIF") == 0){
+					//Add branch to branches list
+					branches.push_back(keyword);
+					
+					//Check for logical expression
+					if(str[i] != OPEN_PAR){
+						errors.push_back("Missing logical expression for ELSEIF statement");
+					}
+					
+					//Check if proceeded by an if or elseif statement
+					if(IF.compare(branches.back()) != 0 && ELSEIF.compare(branches.back()) != 0){
+						errors.push_back("No preceding IF or ELSEIF for branch");
+					}
+				}
+				else if(keyword.compare("ELSE") == 0){
+					//Add branch to branches list
+					branches.push_back(keyword);
+					
+					//Check if proceeded by an if or elseif statement
+					if(IF.compare(branches.back()) != 0 && ELSEIF.compare(branches.back()) != 0){
+						errors.push_back("No preceding IF or ELSEIF for branch");
+					}
+				}
+				else if(keyword.compare("BEGIN") == 0){
+					//Add begin to stack
+					beginStack.add(keyword);
+				}
+				else if(keyword.compare("END") == 0){
+					//Remove 1 loop from stack
+					loopStack.remove();
+					//Remove 1 begin from stack
+					if(beginStack.length() > 0){
+						beginStack.remove();
+					}
+					//There are more ends than begins
+					else{
+						errors.push_back("Missing keyword BEGIN");
+					}
+				}
 			}
 			//Invalid keyword found
 			else if(!keyword.empty()){
 				//Add Invalid keyword to errors
-				errors.push_back("Bad token found: " + keyword);
+				errors.push_back("Invalid keyword " + keyword);
 			}
 			
 			//Empty string
@@ -146,7 +244,7 @@ void Tokenizer::findConstants(string str){
 				}
 			
 				//Empty string
-				constant.empty();
+				constant.clear();
 			}
 		}
 	}
